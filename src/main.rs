@@ -6,7 +6,7 @@ use crate::commands::blackbox::BLACKBOX_GROUP;
 use crate::commands::help::MY_HELP;
 use crate::commands::protip::PROTIP_GROUP;
 use crate::commands::send_message;
-use crate::database::{Database, DatabaseConnection};
+use crate::database::{Database};
 use serenity::futures::io::ErrorKind;
 use serenity::prelude::*;
 use serenity::{
@@ -20,6 +20,7 @@ use std::collections::hash_map::RandomState;
 use std::{collections::HashSet, env, io};
 use tracing::{debug, error, info, instrument, warn, Level};
 use tracing_subscriber::FmtSubscriber;
+use crate::database::sqlite_connection::SQLiteConnection;
 
 #[macro_use]
 extern crate scan_fmt;
@@ -85,7 +86,8 @@ async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError) {
 extern crate lazy_static;
 
 lazy_static! {
-    static ref DB_MUTEX: Mutex<Database> = Mutex::new(Database::new());
+    // static ref DB_MUTEX: Mutex<Database<SQLiteConnection>> = Mutex::new(Database::new());
+    static ref DATABASE:Database<SQLiteConnection> = Database::new();
 }
 
 type BoxError = Box<dyn std::error::Error>;
@@ -101,9 +103,9 @@ async fn main() -> BoxResult {
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
     {
-        let mut db = DB_MUTEX.lock().await;
-        db.connect()?;
-        db.set_up()?;
+        // let mut db = DB_MUTEX.lock().await;
+        // db.connect()?;
+        // db.set_up()?;
     }
 
     if let Err(why) = make_client().await?.start().await {
